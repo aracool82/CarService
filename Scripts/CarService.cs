@@ -122,6 +122,11 @@ namespace dz_48
                         AcceptFine();
                     }
                 }
+
+                Console.Clear();
+                Console.WriteLine("Конечная информачия о машине :\n");
+                car.ShowInfo();
+                Console.ReadKey();
             }
         }
 
@@ -139,14 +144,16 @@ namespace dz_48
                           $"[{(int)Answer.Cancel}] Отказатся (получить штраф {Fine})\n" +
                           $"Введите номер : ");
 
+            bool isAnswer = false;
+
             do
             {
                 answer = Assistant.ReadInt();
 
                 if (answer == (int)Answer.Replace || answer == (int)Answer.Cancel)
-                    break;
+                    isAnswer=true;
             }
-            while (true);
+            while (isAnswer = false);
 
             return answer;
         }

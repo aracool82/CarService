@@ -43,7 +43,7 @@ namespace dz_48
 
             foreach (Detail detail in _details)
             {
-                string state = detail.IsWorking == true ? "нармально" : "               <<<сламатая>>>";
+                string state = detail.IsWorking == true ? "и так сойдет" : "               <<<сламатая>>>";
                 Console.WriteLine($" {detail.PartName} - {state}");
             }
         }
