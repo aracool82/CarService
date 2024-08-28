@@ -5,27 +5,23 @@ namespace dz_48
 {
     public class CarService
     {
-        private const int FineForRefused = 2000;
-        private const int Fine = 500;
+        private const int FineForRefused = 10000;
+        private const int Fine = 1000;
 
         private int _money;
         private string[] _carPartNames;
 
         private Queue<Car> _cars = new Queue<Car>();
-        private List<Product> _partsWarehous = new List<Product>();
+        private Warehouse _warehouse = new Warehouse();
 
         private DetailFactory _detailFactory = new DetailFactory();
         private CarFactory _carFactory = new CarFactory();
         private ProductFactory _productFactory = new ProductFactory();
 
-        public CarService()
+        public CarService(Queue<Car> cars)
         {
-            int carCount = 10;
+            _cars= cars;
             _money = 0;
-
-            InitPartsNames();
-            CreateCarQueue(carCount);
-            CreatePartsWarehous();
         }
 
         public void Work()
@@ -50,11 +46,11 @@ namespace dz_48
                 switch (Console.ReadLine())
                 {
                     case CommandServeCar:
-                        ServeCar();
+                        Serve();
                         break;
 
                     case CommandRefuseService:
-                        RefuseService();
+                        Refuse();
                         break;
 
                     case CommandExit:
@@ -66,7 +62,7 @@ namespace dz_48
             }
         }
 
-        private void ServeCar()
+        private void Serve()
         {
             Console.Clear();
 
@@ -77,13 +73,9 @@ namespace dz_48
             }
 
             Car car = _cars.Dequeue();
+            PrintCarInfo("Начальная информация автомобиля ", car);
 
-            Console.WriteLine("Начальная информация автомобиля :");
-            car.ShowInfo();
-            Console.ReadKey();
-            Console.Clear();
-
-            if (TryFindFaultyParstInCar(car, out List<Detail> details))
+            if (TryFindFaultyPars(car, out List<Detail> details))
             {
                 Console.WriteLine("Найдены следующие неисправности:\n");
 
@@ -94,7 +86,7 @@ namespace dz_48
 
                 for (int i = 0; i < details.Count; i++)
                 {
-                    if (TryFindPartInWarehousByPartName(details[i].PartName, out Product product))
+                    if (_warehouse.TryFindProduct(details[i].PartName, out Product product))
                     {
                         Console.WriteLine($"{i + 1}.\nНа складе нашлась деталь [{product.PartName}] для замены.    <<стоимость>> - {product.Price} р.\n\n");
 
@@ -102,16 +94,20 @@ namespace dz_48
                         {
                             if (TryReplacePart(car, details[i].PartName))
                             {
-                                _partsWarehous.Remove(product);
                                 _money += product.Price;
                                 Console.WriteLine($"Деталь [{product.PartName}] была успешно замененo(а)\n");
+
+                                if (_warehouse.TryRemoveProduct(product.PartName))
+                                    Console.WriteLine("И удалена со склада");
+                                else
+                                    Console.WriteLine("Не удалось удалить со склада продукт");
                             }
                             else
                             {
                                 Console.WriteLine("Что то пошло не так...Не удалось заменить запчасть");
                             }
                         }
-                        else 
+                        else
                         {
                             AcceptFine();
                         }
@@ -123,11 +119,17 @@ namespace dz_48
                     }
                 }
 
-                Console.Clear();
-                Console.WriteLine("Конечная информачия о машине :\n");
-                car.ShowInfo();
-                Console.ReadKey();
+                PrintCarInfo("Конечная информачия о машине", car);
             }
+        }
+
+        private void PrintCarInfo(string message, Car car)
+        {
+            Console.Clear();
+            Console.WriteLine($"{message} :\n");
+            car.ShowInfo();
+            Console.ReadKey();
+            Console.Clear();
         }
 
         private void AcceptFine()
@@ -151,14 +153,14 @@ namespace dz_48
                 answer = Assistant.ReadInt();
 
                 if (answer == (int)Answer.Replace || answer == (int)Answer.Cancel)
-                    isAnswer=true;
+                    isAnswer = true;
             }
             while (isAnswer = false);
 
             return answer;
         }
 
-        private void RefuseService()
+        private void Refuse()
         {
             if (_cars.Count > 0)
             {
@@ -175,7 +177,7 @@ namespace dz_48
 
         private bool TryReplacePart(Car car, string partName)
         {
-            if (car == null || partName == null)
+            if (car == null || string.IsNullOrWhiteSpace(partName))
                 return false;
 
             if (car.TryRemoveDetail(partName))
@@ -187,7 +189,7 @@ namespace dz_48
             return false;
         }
 
-        private bool TryFindFaultyParstInCar(Car car, out List<Detail> parts)
+        private bool TryFindFaultyPars(Car car, out List<Detail> parts)
         {
             parts = null;
 
@@ -213,93 +215,6 @@ namespace dz_48
             }
 
             return false;
-        }
-
-        private bool TryFindPartInWarehousByPartName(string partName, out Product product)
-        {
-            product = null;
-
-            if (_partsWarehous == null || partName == null)
-                return false;
-
-            if (_partsWarehous.Count == 0)
-                return false;
-
-            foreach (var part in _partsWarehous)
-            {
-                if (part.PartName == partName)
-                {
-                    product = part;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private void CreatePartsWarehous()
-        {
-            int completeSets = 2;
-
-            List<Product> products = new List<Product>();
-
-            for (int i = 0; i < _carPartNames.Length; i++)
-            {
-                int minPrice = 1000;
-                int maxPrice = 5000;
-                int price = Assistant.GenerateRandomNumber(minPrice, maxPrice + 1);
-                products.Add(_productFactory.Create(_carPartNames[i], price));
-            }
-
-            for (int i = 0; i < completeSets; i++)
-                _partsWarehous.AddRange(products);
-        }
-
-        private void CreateCarQueue(int carCount)
-        {
-            for (int i = 0; i < carCount; i++)
-            {
-                List<Detail> details = GetCompleteDetails();
-                BreakRandomParts(details);
-                _cars.Enqueue(_carFactory.Create(details));
-            }
-        }
-
-        private List<Detail> GetCompleteDetails()
-        {
-            List<Detail> details = new List<Detail>();
-
-            foreach (var part in _carPartNames)
-                details.Add(_detailFactory.Create(part));
-
-            return details;
-        }
-
-        private void BreakRandomParts(List<Detail> details)
-        {
-            int maxBreakCount = 3;
-            int breakCount = Assistant.GenerateRandomNumber(1, maxBreakCount + 1);
-
-            while (breakCount > 0)
-            {
-                int randomIndex = Assistant.GenerateRandomNumber(details.Count);
-
-                if (details[randomIndex].IsWorking == true)
-                {
-                    details[randomIndex].BrackDetail();
-                    breakCount--;
-                }
-            }
-        }
-
-        private void InitPartsNames()
-        {
-            _carPartNames =
-                [
-                    "двигатель","кузов", "кпп", "руль", "педаль газа", "педаль тормоза", "бензобак", "безонасос",
-                    "П.П. колесо", "П.Л. колесо", "З.П.колесо", "З.Л. колесо", "П. зеркало", "Л. зеркало",
-                    "дворники лобового стекла", "дворники заднего стекла","Л. фара","П. фара"
-                ];
         }
     }
 }

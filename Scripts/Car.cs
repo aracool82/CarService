@@ -16,13 +16,15 @@ namespace dz_48
 
         public void AddDetail(Detail detail)
         {
-            if (detail != null)
-                _details.Add(detail);
+            if (detail == null)
+                return;
+
+            _details.Add(detail);
         }
 
         public bool TryRemoveDetail(string partName)
         {
-            if (partName == null)
+            if (string.IsNullOrWhiteSpace(partName))
                 return false;
 
             foreach (Detail part in _details)
