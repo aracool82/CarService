@@ -15,10 +15,5 @@
         { 
             IsWorking = false;
         }
-
-        public void FixDetail()
-        {
-            IsWorking = true;
-        }
     }
 }

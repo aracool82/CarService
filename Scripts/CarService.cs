@@ -15,12 +15,11 @@ namespace dz_48
         private Warehouse _warehouse = new Warehouse();
 
         private DetailFactory _detailFactory = new DetailFactory();
-        private CarFactory _carFactory = new CarFactory();
         private ProductFactory _productFactory = new ProductFactory();
 
         public CarService(Queue<Car> cars)
         {
-            _cars= cars;
+            _cars = cars;
             _money = 0;
         }
 
@@ -57,8 +56,6 @@ namespace dz_48
                         isWork = false;
                         break;
                 }
-
-                Console.ReadKey();
             }
         }
 
@@ -75,52 +72,42 @@ namespace dz_48
             Car car = _cars.Dequeue();
             PrintCarInfo("Начальная информация автомобиля ", car);
 
-            if (TryFindFaultyPars(car, out List<Detail> details))
+            if (!TryFindFaultyPars(car, out List<Detail> faultyDetails))
+                return;
+
+            Console.WriteLine("Найдены следующие неисправности:\n");
+
+            for (int i = 0; i < faultyDetails.Count; i++)
+                Console.WriteLine($"-[{faultyDetails[i].PartName}]-");
+
+            Console.WriteLine("\nПопробуем починить. Надо порыскать по складу...\n");
+
+            for (int i = 0; i < faultyDetails.Count; i++)
             {
-                Console.WriteLine("Найдены следующие неисправности:\n");
-
-                for (int i = 0; i < details.Count; i++)
-                    Console.WriteLine($"-[{details[i].PartName}]-");
-
-                Console.WriteLine("\nПопробуем починить. Надо порыскать по складу...\n");
-
-                for (int i = 0; i < details.Count; i++)
+                if (_warehouse.TryFindProduct(faultyDetails[i].PartName, out Product findedPart))
                 {
-                    if (_warehouse.TryFindProduct(details[i].PartName, out Product product))
+                    Console.WriteLine($"{i + 1}.\nНа складе нашлась деталь [{findedPart.PartName}] для замены.    <<стоимость>> - {findedPart.Price} р.\n\n");
+
+                    if (GetAnswer() == (int)Answer.Replace)
                     {
-                        Console.WriteLine($"{i + 1}.\nНа складе нашлась деталь [{product.PartName}] для замены.    <<стоимость>> - {product.Price} р.\n\n");
-
-                        if (GetAnswer() == (int)Answer.Replace)
-                        {
-                            if (TryReplacePart(car, details[i].PartName))
-                            {
-                                _money += product.Price;
-                                Console.WriteLine($"Деталь [{product.PartName}] была успешно замененo(а)\n");
-
-                                if (_warehouse.TryRemoveProduct(product.PartName))
-                                    Console.WriteLine("И удалена со склада");
-                                else
-                                    Console.WriteLine("Не удалось удалить со склада продукт");
-                            }
-                            else
-                            {
-                                Console.WriteLine("Что то пошло не так...Не удалось заменить запчасть");
-                            }
-                        }
-                        else
-                        {
-                            AcceptFine();
-                        }
+                        car.ReplaceDetail(_detailFactory.Create(findedPart.PartName));
+                        _money += findedPart.Price;
+                        _warehouse.RemoveProductByName(findedPart.PartName);
+                        Console.WriteLine($"Деталь [{findedPart.PartName}] была успешно замененo(а)\n");
                     }
                     else
                     {
-                        Console.WriteLine($"На складе нет [{details[i].PartName}]");
                         AcceptFine();
                     }
                 }
-
-                PrintCarInfo("Конечная информачия о машине", car);
+                else
+                {
+                    Console.WriteLine($"На складе нет [{faultyDetails[i].PartName}]");
+                    AcceptFine();
+                }
             }
+
+            PrintCarInfo("Конечная информачия о машине", car);
         }
 
         private void PrintCarInfo(string message, Car car)
@@ -155,7 +142,7 @@ namespace dz_48
                 if (answer == (int)Answer.Replace || answer == (int)Answer.Cancel)
                     isAnswer = true;
             }
-            while (isAnswer = false);
+            while (isAnswer == false);
 
             return answer;
         }
@@ -173,20 +160,6 @@ namespace dz_48
             {
                 Console.WriteLine("Всех обслужили, закрывай лавочку...");
             }
-        }
-
-        private bool TryReplacePart(Car car, string partName)
-        {
-            if (car == null || string.IsNullOrWhiteSpace(partName))
-                return false;
-
-            if (car.TryRemoveDetail(partName))
-            {
-                car.AddDetail(_detailFactory.Create(partName));
-                return true;
-            }
-
-            return false;
         }
 
         private bool TryFindFaultyPars(Car car, out List<Detail> parts)

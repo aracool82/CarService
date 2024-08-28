@@ -14,15 +14,18 @@ namespace dz_48
 
         public List<Detail> Details => new List<Detail>(_details);
 
-        public void AddDetail(Detail detail)
+        public void ReplaceDetail(Detail detail)
         {
             if (detail == null)
+                return;
+
+            if (!TryRemoveDetail(detail.PartName))
                 return;
 
             _details.Add(detail);
         }
 
-        public bool TryRemoveDetail(string partName)
+        private bool TryRemoveDetail(string partName)
         {
             if (string.IsNullOrWhiteSpace(partName))
                 return false;
@@ -45,7 +48,7 @@ namespace dz_48
 
             foreach (Detail detail in _details)
             {
-                string state = detail.IsWorking == true ? "и так сойдет" : "               <<<сламатая>>>";
+                string state = detail.IsWorking == true ? "ok" : "\t\t <<<сламатая>>>";
                 Console.WriteLine($" {detail.PartName} - {state}");
             }
         }

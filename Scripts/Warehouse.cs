@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace dz_48
 {
@@ -12,7 +13,35 @@ namespace dz_48
             CreateProducts();
         }
 
-        public bool TryRemoveProduct(string partName)
+        public void RemoveProductByName(string partName)
+        {
+            if(TryRemoveProduct(partName))
+                Console.WriteLine("Продукт удален со склада");
+        }
+
+        public bool TryFindProduct(string partName, out Product findedPart)
+        {
+            findedPart = null;
+
+            if (string.IsNullOrWhiteSpace(partName))
+                return false;
+
+            if (_products.Count == 0)
+                return false;
+
+            foreach (var part in _products)
+            {
+                if (part.PartName == partName)
+                {
+                    findedPart = part;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool TryRemoveProduct(string partName)
         {
             if (string.IsNullOrWhiteSpace(partName))
                 return false;
@@ -25,28 +54,6 @@ namespace dz_48
                 if (product.PartName == partName)
                 {
                     _products.Remove(product);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public bool TryFindProduct(string partName, out Product product)
-        {
-            product = null;
-
-            if (string.IsNullOrWhiteSpace(partName))
-                return false;
-
-            if (_products.Count == 0)
-                return false;
-
-            foreach (var part in _products)
-            {
-                if (part.PartName == partName)
-                {
-                    product = part;
                     return true;
                 }
             }
