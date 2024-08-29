@@ -16,7 +16,7 @@ namespace dz_48
         public void RemoveProductByName(string partName)
         {
             if (TryFindProduct(partName, out Product findedPart))
-            { 
+            {
                 Console.WriteLine("Продукт удален со склада");
                 _products.Remove(findedPart);
             }
@@ -46,23 +46,12 @@ namespace dz_48
 
         private void CreateProducts()
         {
-            string[] carPartNames =
-                [
-                    "двигатель","кузов", "кпп", "руль", "педаль газа", "педаль тормоза", "бензобак", "безонасос",
-                    "П.П. колесо", "П.Л. колесо", "З.П.колесо", "З.Л. колесо", "П. зеркало", "Л. зеркало",
-                    "дворники лобового стекла", "дворники заднего стекла","Л. фара","П. фара","магнитола",
-                    "антэна","амортизаторы"
-                ];
+            int minPartCount = 20;
+            int maxPartCount = 40;
+            int partCount = Assistant.GenerateRandomNumber(minPartCount, maxPartCount + 1);
 
-            for (int i = 0; i < carPartNames.Length; i++)
-            {
-                int minPartCount = 2;
-                int maxPartCount = 6;
-                int partCount = Assistant.GenerateRandomNumber(minPartCount, maxPartCount + 1);
-
-                for (int j = 0; j < partCount; j++)
-                    _products.Add(_productFactory.Create(carPartNames[i]));
-            }
+            for (int j = 0; j < partCount; j++)
+                _products.Add(_productFactory.Create());
         }
     }
 }
