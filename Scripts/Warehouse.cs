@@ -15,8 +15,11 @@ namespace dz_48
 
         public void RemoveProductByName(string partName)
         {
-            if(TryRemoveProduct(partName))
+            if (TryFindProduct(partName, out Product findedPart))
+            { 
                 Console.WriteLine("Продукт удален со склада");
+                _products.Remove(findedPart);
+            }
         }
 
         public bool TryFindProduct(string partName, out Product findedPart)
@@ -34,26 +37,6 @@ namespace dz_48
                 if (part.PartName == partName)
                 {
                     findedPart = part;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool TryRemoveProduct(string partName)
-        {
-            if (string.IsNullOrWhiteSpace(partName))
-                return false;
-
-            if (_products.Count == 0)
-                return false;
-
-            foreach (Product product in _products)
-            {
-                if (product.PartName == partName)
-                {
-                    _products.Remove(product);
                     return true;
                 }
             }
