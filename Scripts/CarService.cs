@@ -88,7 +88,7 @@ namespace dz_48
                 {
                     Console.WriteLine($"{i + 1}.\nНа складе нашлась деталь [{findedPart.PartName}] для замены.    <<стоимость>> - {findedPart.Price} р.\n\n");
 
-                    if (GetAnswer() == (int)Answer.Replace)
+                    if (GetAnswer() == Answer.Replace)
                     {
                         car.ReplaceDetail(_detailFactory.Create(findedPart.PartName));
                         _money += findedPart.Price;
