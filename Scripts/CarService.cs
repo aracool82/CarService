@@ -125,9 +125,9 @@ namespace dz_48
             _money -= Fine;
         }
 
-        private int GetAnswer()
+        private Answer GetAnswer()
         {
-            int answer;
+            int number;
 
             Console.Write($"[{(int)Answer.Replace}] Заменить деталь?\n" +
                           $"[{(int)Answer.Cancel}] Отказатся (получить штраф {Fine})\n" +
@@ -137,14 +137,14 @@ namespace dz_48
 
             do
             {
-                answer = Assistant.ReadInt();
+                number = Assistant.ReadInt();
 
-                if (answer == (int)Answer.Replace || answer == (int)Answer.Cancel)
+                if (number == (int)Answer.Replace || number == (int)Answer.Cancel)
                     isAnswer = true;
             }
             while (isAnswer == false);
 
-            return answer;
+            return number == (int)Answer.Replace ? Answer.Replace : Answer.Cancel;
         }
 
         private void Refuse()
