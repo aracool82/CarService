@@ -56,16 +56,12 @@ namespace dz_48
 
             for (int i = 0; i < carPartNames.Length; i++)
             {
-                int minPrice = 1000;
-                int maxPrice = 5000;
-                int price = Assistant.GenerateRandomNumber(minPrice, maxPrice + 1);
-
                 int minPartCount = 2;
                 int maxPartCount = 6;
                 int partCount = Assistant.GenerateRandomNumber(minPartCount, maxPartCount + 1);
 
                 for (int j = 0; j < partCount; j++)
-                    _products.Add(_productFactory.Create(carPartNames[i], price));
+                    _products.Add(_productFactory.Create(carPartNames[i]));
             }
         }
     }

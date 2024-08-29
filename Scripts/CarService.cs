@@ -9,13 +9,11 @@ namespace dz_48
         private const int Fine = 1000;
 
         private int _money;
-        private string[] _carPartNames;
 
         private Queue<Car> _cars = new Queue<Car>();
         private Warehouse _warehouse = new Warehouse();
 
         private DetailFactory _detailFactory = new DetailFactory();
-        private ProductFactory _productFactory = new ProductFactory();
 
         public CarService(Queue<Car> cars)
         {
@@ -72,7 +70,7 @@ namespace dz_48
             Car car = _cars.Dequeue();
             PrintCarInfo("Начальная информация автомобиля ", car);
 
-            if (!TryFindFaultyPars(car, out List<Detail> faultyDetails))
+            if (TryFindFaultyPars(car, out List<Detail> faultyDetails) == false)
                 return;
 
             Console.WriteLine("Найдены следующие неисправности:\n");

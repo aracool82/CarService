@@ -19,7 +19,7 @@ namespace dz_48
             if (detail == null)
                 return;
 
-            if (!TryRemoveDetail(detail.PartName))
+            if (TryRemoveDetail(detail.PartName) == false)
                 return;
 
             _details.Add(detail);
