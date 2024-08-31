@@ -13,8 +13,17 @@ namespace dz_48
             CreateProducts();
         }
 
+        public int GetProductPrice(string partName)
+        {
+            if(TryFindProduct(partName, out Product findedPart))
+                return findedPart.Price;
+
+            return 0;
+        }
+
         public void RemoveProductByName(string partName)
         {
+
             if (TryFindProduct(partName, out Product findedPart))
             {
                 Console.WriteLine("Продукт удален со склада");
@@ -27,10 +36,10 @@ namespace dz_48
             findedPart = null;
 
             if (string.IsNullOrWhiteSpace(partName))
-                return false;
+                throw new ArgumentNullException();
 
             if (_products.Count == 0)
-                return false;
+                throw new ArgumentOutOfRangeException(); ;
 
             foreach (var part in _products)
             {
@@ -46,8 +55,8 @@ namespace dz_48
 
         private void CreateProducts()
         {
-            int minPartCount = 20;
-            int maxPartCount = 40;
+            int minPartCount = 10;
+            int maxPartCount = 20;
             int partCount = Assistant.GenerateRandomNumber(minPartCount, maxPartCount + 1);
 
             for (int j = 0; j < partCount; j++)

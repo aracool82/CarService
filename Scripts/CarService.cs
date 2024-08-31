@@ -71,41 +71,65 @@ namespace dz_48
             PrintCarInfo("Начальная информация автомобиля ", car);
 
             if (TryFindFaultyPars(car, out List<Detail> faultyDetails) == false)
+            {
+                Console.WriteLine("У машины дефектов НЕТ");
                 return;
+            }    
 
             Console.WriteLine("Найдены следующие неисправности:\n");
 
             for (int i = 0; i < faultyDetails.Count; i++)
                 Console.WriteLine($"-[{faultyDetails[i].PartName}]-");
 
-            Console.WriteLine("\nПопробуем починить. Надо порыскать по складу...\n");
+            Console.WriteLine("\nПопробуем починить. Надо порыскать по складу...\n" +
+                "Найденые товары на складе :\n");
+
+            List<string> partNamesForReplace = new List<string>();
+            int fineCounter = 0;
 
             for (int i = 0; i < faultyDetails.Count; i++)
             {
                 if (_warehouse.TryFindProduct(faultyDetails[i].PartName, out Product findedPart))
                 {
-                    Console.WriteLine($"{i + 1}.\nНа складе нашлась деталь [{findedPart.PartName}] для замены.    <<стоимость>> - {findedPart.Price} р.\n\n");
-
-                    if (GetAnswer() == Answer.Replace)
-                    {
-                        car.ReplaceDetail(_detailFactory.Create(findedPart.PartName));
-                        _money += findedPart.Price;
-                        _warehouse.RemoveProductByName(findedPart.PartName);
-                        Console.WriteLine($"Деталь [{findedPart.PartName}] была успешно замененo(а)\n");
-                    }
-                    else
-                    {
-                        AcceptFine();
-                    }
+                    partNamesForReplace.Add(findedPart.PartName);
+                    Console.WriteLine($"[{findedPart.PartName}] - наличие на складе [ДА] - цена замены - [{findedPart.Price}].");
                 }
                 else
                 {
-                    Console.WriteLine($"На складе нет [{faultyDetails[i].PartName}]");
-                    AcceptFine();
+                    fineCounter++;
+                    Console.WriteLine($"[{faultyDetails[i].PartName}] - наличие на складе [Нет] .");
+                    Console.WriteLine("Вынуждены отказать в ремонте...\n");
                 }
             }
 
-            PrintCarInfo("Конечная информачия о машине", car);
+            if (partNamesForReplace.Count > 0)
+            {
+                for (int i = 0; i < partNamesForReplace.Count; i++)
+                {
+                    if (GetAnswer(partNamesForReplace[i]) == Answer.Replace)
+                    {
+                        car.ReplaceDetail(_detailFactory.Create(partNamesForReplace[i]));
+                        _money += _warehouse.GetProductPrice(partNamesForReplace[i]);
+                        _warehouse.RemoveProductByName(partNamesForReplace[i]);
+                        Console.WriteLine($"Деталь [{partNamesForReplace[i]}] была успешно заменена(о)\n");
+                    }
+                    else
+                    {
+                        fineCounter++;
+                    }
+                }
+            }
+
+            if (fineCounter > 0)
+            {
+                _money -= fineCounter * Fine;
+                Console.WriteLine($"\nЗа невыполненые ремонты или отказы нам впаяли штраф {fineCounter * Fine}");
+                Console.ReadKey();
+            }
+            else 
+            {
+                PrintCarInfo("Машина полностью здорова...\nКонечная информачия о машине :", car);
+            }
         }
 
         private void PrintCarInfo(string message, Car car)
@@ -117,17 +141,12 @@ namespace dz_48
             Console.Clear();
         }
 
-        private void AcceptFine()
-        {
-            Console.WriteLine($"Был выписан штраф в размере {Fine} р.");
-            _money -= Fine;
-        }
-
-        private Answer GetAnswer()
+        private Answer GetAnswer(string partName)
         {
             int number;
 
-            Console.Write($"[{(int)Answer.Replace}] Заменить деталь?\n" +
+            Console.Write($"\n---[{partName}]--- :\n\n" +
+                          $"[{(int)Answer.Replace}] Заменить деталь?\n" +
                           $"[{(int)Answer.Cancel}] Отказатся (получить штраф {Fine})\n" +
                           $"Введите номер : ");
 
